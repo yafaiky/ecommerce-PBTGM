@@ -11,8 +11,9 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'description', 'price', 'original_price',
-        'stock', 'image', 'category_id', 'is_featured', 'is_active'
+        'name', 'slug', 'description', 'price', 'original_price', 
+        'stock', 'image', 'category_id', 'is_featured', 'is_active', 'user_id',
+        'sizes', 'colors'
     ];
 
     protected $casts = [
@@ -20,6 +21,8 @@ class Product extends Model
         'is_active'   => 'boolean',
         'price'       => 'decimal:2',
         'original_price' => 'decimal:2',
+        'sizes' => 'array',
+        'colors' => 'array',
     ];
 
     protected static function booted(): void
@@ -34,6 +37,11 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function seller()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function cartItems()

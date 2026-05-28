@@ -103,11 +103,11 @@
             <div class="nav-links">
                 <a href="{{ route('home') }}">Home</a>
                 <a href="{{ route('products.index') }}">Collections</a>
-                <a href="{{ route('user.dashboard') }}" class="active">Account</a>
+                <a href="{{ route('dashboard') }}" class="active">Account</a>
             </div>
             <div class="nav-icons">
                 <a href="{{ route('products.index') }}"><i class="fas fa-search"></i></a>
-                <a href="{{ route('user.dashboard') }}"><i class="far fa-user"></i></a>
+                <a href="{{ route('dashboard') }}"><i class="far fa-user"></i></a>
                 <a href="{{ route('cart.index') }}">
                     <i class="fas fa-shopping-bag"></i>
                     @php $cartCount = \App\Models\Cart::where('user_id', auth()->id())->count(); @endphp
@@ -182,7 +182,17 @@
                                 <div class="order-date">{{ $order->created_at->format('F d, Y') }}</div>
                             </div>
                             <div style="flex:1; text-align:center;">
-                                <span class="order-status" style="color: {{ $order->status == 'delivered' ? 'var(--brand-green)' : 'var(--text-muted)' }}">{{ ucfirst($order->status) }}</span>
+                                @php
+                                    $statusLabel = match($order->status) {
+                                        'pending' => 'Menunggu',
+                                        'processing' => 'Dikemas',
+                                        'shipped' => 'Dikirim',
+                                        'delivered' => 'Diterima',
+                                        'cancelled' => 'Dibatalkan',
+                                        default => ucfirst($order->status)
+                                    };
+                                @endphp
+                                <span class="order-status" style="color: {{ $order->status == 'delivered' ? 'var(--brand-green)' : 'var(--text-muted)' }}">{{ $statusLabel }}</span>
                             </div>
                             <div class="order-total">
                                 {{ str_replace('Rp ', 'Rp', $order->formatted_total) }}

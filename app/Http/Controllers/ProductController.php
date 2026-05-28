@@ -20,6 +20,24 @@ class ProductController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
+        if ($request->filled('price')) {
+            $query->where(function ($q) use ($request) {
+                $prices = (array) $request->price;
+                if (in_array('under_500k', $prices)) {
+                    $q->orWhere('price', '<', 500000);
+                }
+                if (in_array('500k_1m', $prices)) {
+                    $q->orWhereBetween('price', [500000, 1000000]);
+                }
+                if (in_array('1m_2m', $prices)) {
+                    $q->orWhereBetween('price', [1000000, 2000000]);
+                }
+                if (in_array('over_2m', $prices)) {
+                    $q->orWhere('price', '>', 2000000);
+                }
+            });
+        }
+
         if ($request->filled('sort')) {
             match ($request->sort) {
                 'price_asc'   => $query->orderBy('price', 'asc'),

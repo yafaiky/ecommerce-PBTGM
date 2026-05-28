@@ -445,7 +445,7 @@
             <div class="nav-icons">
                 <a href="{{ route('products.index') }}"><i class="fas fa-search"></i></a>
                 @auth
-                    <a href="{{ route('user.dashboard') }}"><i class="far fa-user"></i></a>
+                    <a href="{{ route('dashboard') }}"><i class="far fa-user"></i></a>
                     <a href="{{ route('cart.index') }}">
                         <i class="fas fa-shopping-bag"></i>
                         @php $cartCount = \App\Models\Cart::where('user_id', auth()->id())->count(); @endphp
@@ -586,7 +586,7 @@
                     <li><a href="#">Terms of Service</a></li>
                 </ul>
                 <div style="margin-top: 2rem; font-size: 0.65rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px;">
-                    © 2024 Luxe & Co. Crafted for the discerning collector.
+                    © 2026 Luxe & Co. Crafted for the discerning collector.
                 </div>
             </div>
         </div>
