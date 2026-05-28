@@ -335,7 +335,7 @@
             <div class="nav-icons">
                 <a href="{{ route('products.index') }}"><i class="fas fa-search"></i></a>
                 @auth
-                    <a href="{{ route('user.dashboard') }}"><i class="far fa-user"></i></a>
+                    <a href="{{ route('dashboard') }}"><i class="far fa-user"></i></a>
                     <a href="{{ route('cart.index') }}">
                         <i class="fas fa-shopping-bag"></i>
                         @php $cartCount = \App\Models\Cart::where('user_id', auth()->id())->count(); @endphp
@@ -396,27 +396,36 @@
                 @csrf
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
 
+                @if(!empty($product->colors) && is_array($product->colors))
                 <div class="option-group">
-                    <span class="option-label">Color: Deep Emerald</span>
+                    <span class="option-label">Color</span>
                     <div class="color-options">
-                        <div class="color-dot active" style="background:#033b2a"></div>
-                        <div class="color-dot" style="background:#111111"></div>
-                        <div class="color-dot" style="background:#f5f5f5"></div>
+                        @foreach($product->colors as $index => $color)
+                            <label style="cursor: pointer;">
+                                <input type="radio" name="color" value="{{ $color }}" {{ $index === 0 ? 'checked' : '' }} required style="display:none;" onchange="updateSelectedColor(this)">
+                                <div class="color-dot {{ $index === 0 ? 'active' : '' }}" style="background:{{ strtolower($color) == 'hitam' ? '#111' : (strtolower($color) == 'putih' ? '#eee' : (strtolower($color) == 'navy' ? '#000080' : strtolower($color))) }}" title="{{ $color }}"></div>
+                            </label>
+                        @endforeach
                     </div>
                 </div>
+                @endif
 
+                @if(!empty($product->sizes) && is_array($product->sizes))
                 <div class="option-group">
                     <div class="size-header">
                         <span class="option-label">Select Size</span>
                         <span class="size-guide">Size Guide</span>
                     </div>
                     <div class="size-grid">
-                        <div class="size-box">S</div>
-                        <div class="size-box active">M</div>
-                        <div class="size-box">L</div>
-                        <div class="size-box">XL</div>
+                        @foreach($product->sizes as $index => $size)
+                            <label style="cursor: pointer;">
+                                <input type="radio" name="size" value="{{ $size }}" {{ $index === 0 ? 'checked' : '' }} required style="display:none;" onchange="updateSelectedSize(this)">
+                                <div class="size-box {{ $index === 0 ? 'active' : '' }}">{{ strtoupper($size) }}</div>
+                            </label>
+                        @endforeach
                     </div>
                 </div>
+                @endif
 
                 <div class="add-to-cart-wrapper">
                     <div class="qty-controls">
@@ -536,4 +545,18 @@
     </footer>
 
 </body>
+<script>
+function updateSelectedColor(radio) {
+    document.querySelectorAll('input[name="color"]').forEach(el => {
+        el.nextElementSibling.classList.remove('active');
+    });
+    radio.nextElementSibling.classList.add('active');
+}
+function updateSelectedSize(radio) {
+    document.querySelectorAll('input[name="size"]').forEach(el => {
+        el.nextElementSibling.classList.remove('active');
+    });
+    radio.nextElementSibling.classList.add('active');
+}
+</script>
 </html>

@@ -318,7 +318,7 @@
             <div class="nav-icons">
                 <a href="{{ route('products.index') }}"><i class="fas fa-search"></i></a>
                 @auth
-                    <a href="{{ route('user.dashboard') }}"><i class="far fa-user"></i></a>
+                    <a href="{{ route('dashboard') }}"><i class="far fa-user"></i></a>
                     <a href="{{ route('cart.index') }}">
                         <i class="fas fa-shopping-bag"></i>
                         @php $cartCount = \App\Models\Cart::where('user_id', auth()->id())->count(); @endphp
@@ -346,50 +346,66 @@
 
         <!-- SIDEBAR FILTERS -->
         <aside class="sidebar">
-            <div class="filter-section">
-                <div class="filter-title">Filters</div>
-            </div>
-
-            <div class="filter-section">
-                <div class="filter-title">Price Range</div>
-                <label class="filter-option"><input type="checkbox"> Under Rp 500.000</label>
-                <label class="filter-option"><input type="checkbox"> Rp 500k - Rp 1M</label>
-                <label class="filter-option"><input type="checkbox"> Rp 1M - Rp 2M</label>
-                <label class="filter-option"><input type="checkbox"> Rp 2M+</label>
-            </div>
-
-            <div class="filter-section">
-                <div class="filter-title">Size</div>
-                <div class="size-grid">
-                    <div class="size-box">XS</div>
-                    <div class="size-box active">S</div>
-                    <div class="size-box">M</div>
-                    <div class="size-box">L</div>
-                    <div class="size-box">XL</div>
-                    <div class="size-box">XXL</div>
+            <form id="filter-form" action="{{ route('products.index') }}" method="GET">
+                @if(request('category'))
+                    <input type="hidden" name="category" value="{{ request('category') }}">
+                @endif
+                @if(request('sort'))
+                    <input type="hidden" name="sort" value="{{ request('sort') }}">
+                @endif
+                @if(request('search'))
+                    <input type="hidden" name="search" value="{{ request('search') }}">
+                @endif
+                
+                <div class="filter-section">
+                    <div class="filter-title">Filters</div>
                 </div>
-            </div>
 
-            <div class="filter-section">
-                <div class="filter-title">Color</div>
-                <div class="color-options">
-                    <div class="color-dot" style="background:#033b2a"></div>
-                    <div class="color-dot" style="background:#111111"></div>
-                    <div class="color-dot" style="background:#ffffff"></div>
-                    <div class="color-dot" style="background:#8b4513"></div>
+                <div class="filter-section">
+                    <div class="filter-title">Price Range</div>
+                    @php $selectedPrices = (array) request('price', []); @endphp
+                    <label class="filter-option"><input type="checkbox" name="price[]" value="under_500k" onchange="this.form.submit()" {{ in_array('under_500k', $selectedPrices) ? 'checked' : '' }}> Under Rp 500.000</label>
+                    <label class="filter-option"><input type="checkbox" name="price[]" value="500k_1m" onchange="this.form.submit()" {{ in_array('500k_1m', $selectedPrices) ? 'checked' : '' }}> Rp 500k - Rp 1M</label>
+                    <label class="filter-option"><input type="checkbox" name="price[]" value="1m_2m" onchange="this.form.submit()" {{ in_array('1m_2m', $selectedPrices) ? 'checked' : '' }}> Rp 1M - Rp 2M</label>
+                    <label class="filter-option"><input type="checkbox" name="price[]" value="over_2m" onchange="this.form.submit()" {{ in_array('over_2m', $selectedPrices) ? 'checked' : '' }}> Rp 2M+</label>
                 </div>
-            </div>
 
-            <div class="filter-section">
-                <div class="filter-title">Brand</div>
-                <select class="brand-select">
-                    <option>All Brands</option>
-                    <option>Luxe Heritage</option>
-                    <option>Artisan Studio</option>
-                </select>
-            </div>
-            
-            <a href="{{ route('products.index') }}" style="font-size:0.75rem; text-decoration:underline; color:var(--text-muted);">Reset Filters</a>
+                <!-- Size, Color, Brand are visually disabled as they are not yet supported in the database schema -->
+                <div style="opacity: 0.5; pointer-events: none;" title="Fitur ini belum didukung">
+                    <div class="filter-section">
+                        <div class="filter-title">Size</div>
+                        <div class="size-grid">
+                            <div class="size-box">XS</div>
+                            <div class="size-box">S</div>
+                            <div class="size-box">M</div>
+                            <div class="size-box">L</div>
+                            <div class="size-box">XL</div>
+                            <div class="size-box">XXL</div>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-title">Color</div>
+                        <div class="color-options">
+                            <div class="color-dot" style="background:#033b2a"></div>
+                            <div class="color-dot" style="background:#111111"></div>
+                            <div class="color-dot" style="background:#ffffff"></div>
+                            <div class="color-dot" style="background:#8b4513"></div>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-title">Brand</div>
+                        <select class="brand-select" disabled>
+                            <option>All Brands</option>
+                            <option>Luxe Heritage</option>
+                            <option>Artisan Studio</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <a href="{{ route('products.index', ['category' => request('category')]) }}" style="font-size:0.75rem; text-decoration:underline; color:var(--text-muted);">Reset Filters</a>
+            </form>
         </aside>
 
         <!-- MAIN CONTENT -->
@@ -411,6 +427,10 @@
                     SORT BY: 
                     <form method="GET" action="{{ route('products.index') }}" style="display:inline">
                         @if(request('category'))<input type="hidden" name="category" value="{{ request('category') }}">@endif
+                        @if(request('search'))<input type="hidden" name="search" value="{{ request('search') }}">@endif
+                        @foreach((array) request('price', []) as $priceVal)
+                            <input type="hidden" name="price[]" value="{{ $priceVal }}">
+                        @endforeach
                         <select name="sort" class="sort-select" onchange="this.form.submit()">
                             <option value="newest" {{ request('sort')=='newest' ? 'selected' : '' }}>Newest Arrivals</option>
                             <option value="price_asc" {{ request('sort')=='price_asc' ? 'selected' : '' }}>Price: Low to High</option>

@@ -117,7 +117,7 @@
             <div class="nav-icons">
                 <a href="{{ route('products.index') }}"><i class="fas fa-search"></i></a>
                 @auth
-                    <a href="{{ route('user.dashboard') }}"><i class="far fa-user"></i></a>
+                    <a href="{{ route('dashboard') }}"><i class="far fa-user"></i></a>
                     <a href="{{ route('cart.index') }}">
                         <i class="fas fa-shopping-bag"></i>
                         @php $cartCount = \App\Models\Cart::where('user_id', auth()->id())->count(); @endphp
@@ -165,7 +165,11 @@
                                 <div>
                                     <div class="item-brand">{{ $item->product->category->name }}</div>
                                     <a href="{{ route('products.show', $item->product->slug) }}" class="item-title">{{ $item->product->name }}</a>
-                                    <div class="item-meta">Color: Standard | Size: M</div>
+                                    <div class="item-meta">
+                                        @if($item->color) Color: {{ ucfirst($item->color) }} @endif 
+                                        @if($item->color && $item->size) | @endif 
+                                        @if($item->size) Size: {{ strtoupper($item->size) }} @endif
+                                    </div>
                                 </div>
                                 <div class="item-actions">
                                     <form action="{{ route('cart.update', $item->id) }}" method="POST" style="display:flex; align-items:center;">

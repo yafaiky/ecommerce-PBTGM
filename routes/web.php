@@ -10,12 +10,6 @@ use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
-
 // Halaman utama — Landing Page
 Route::get('/', function () {
     $featured   = Product::with('category')->where('is_featured', true)->where('is_active', true)->take(8)->get();
@@ -32,17 +26,14 @@ Route::get('/products/{slug}', [ProductController::class, 'show'])->name('produc
 Route::get('/dashboard', function () {
     $role = auth()->user()->role;
     return match ($role) {
-        'admin' => redirect()->route('admin.dashboard'),
-        'user'  => redirect()->route('user.dashboard'),
-        default => abort(403, 'Role tidak dikenali.'),
+        'admin'  => redirect()->route('admin.dashboard'),
+        'seller' => redirect()->route('seller.dashboard'),
+        'user'   => redirect()->route('user.dashboard'),
+        default  => abort(403, 'Role tidak dikenali.'),
     };
 })->middleware('auth')->name('dashboard');
 
-/*
-|--------------------------------------------------------------------------
-| Admin Routes
-|--------------------------------------------------------------------------
-*/
+
 Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
@@ -50,11 +41,18 @@ Route::middleware(['auth', 'admin'])
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     });
 
-/*
-|--------------------------------------------------------------------------
-| User Routes
-|--------------------------------------------------------------------------
-*/
+
+Route::middleware(['auth', 'seller'])
+    ->prefix('seller')
+    ->name('seller.')
+    ->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\SellerController::class, 'dashboard'])->name('dashboard');
+        Route::resource('products', \App\Http\Controllers\SellerProductController::class);
+        Route::get('/orders', [\App\Http\Controllers\SellerOrderController::class, 'index'])->name('orders.index');
+        Route::patch('/orders/{order}/status', [\App\Http\Controllers\SellerOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    });
+
+
 Route::middleware(['auth', 'user'])
     ->prefix('user')
     ->name('user.')
@@ -63,11 +61,7 @@ Route::middleware(['auth', 'user'])
         Route::get('/orders', [UserController::class, 'orders'])->name('orders');
     });
 
-/*
-|--------------------------------------------------------------------------
-| Cart Routes (auth required)
-|--------------------------------------------------------------------------
-*/
+
 Route::middleware('auth')->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
@@ -76,21 +70,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Order Routes (auth required)
-|--------------------------------------------------------------------------
-*/
+
 Route::middleware('auth')->group(function () {
     Route::get('/checkout', [OrderController::class, 'checkout'])->name('checkout');
     Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.store');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Profile Routes
-|--------------------------------------------------------------------------
-*/
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

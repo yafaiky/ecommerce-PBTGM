@@ -112,11 +112,11 @@
             <div class="nav-links">
                 <a href="{{ route('home') }}">Home</a>
                 <a href="{{ route('products.index') }}">Collections</a>
-                <a href="{{ route('user.dashboard') }}" class="active">Account</a>
+                <a href="{{ route('dashboard') }}" class="active">Account</a>
             </div>
             <div class="nav-icons">
                 <a href="{{ route('products.index') }}"><i class="fas fa-search"></i></a>
-                <a href="{{ route('user.dashboard') }}"><i class="far fa-user"></i></a>
+                <a href="{{ route('dashboard') }}"><i class="far fa-user"></i></a>
                 <a href="{{ route('cart.index') }}">
                     <i class="fas fa-shopping-bag"></i>
                     @php $cartCount = \App\Models\Cart::where('user_id', auth()->id())->count(); @endphp
@@ -166,7 +166,17 @@
                         </div>
                         <div class="order-actions">
                             <span class="status-badge status-{{ strtolower($order->status) }}">
-                                {{ ucfirst($order->status) }}
+                                @php
+                                    $statusLabel = match($order->status) {
+                                        'pending' => 'Menunggu',
+                                        'processing' => 'Dikemas',
+                                        'shipped' => 'Dikirim',
+                                        'delivered' => 'Diterima',
+                                        'cancelled' => 'Dibatalkan',
+                                        default => ucfirst($order->status)
+                                    };
+                                @endphp
+                                {{ $statusLabel }}
                             </span>
                         </div>
                     </div>
@@ -182,7 +192,12 @@
                             <div class="item-details">
                                 <div class="item-brand">{{ $item->product->category->name ?? 'LUXE & CO.' }}</div>
                                 <div class="item-title">{{ $item->product->name ?? 'Product Unavailable' }}</div>
-                                <div class="item-meta">Color: Standard | Size: M <br> Qty: {{ $item->quantity }}</div>
+                                <div class="item-meta">
+                                    @if($item->color) Color: {{ ucfirst($item->color) }} @endif 
+                                    @if($item->color && $item->size) | @endif 
+                                    @if($item->size) Size: {{ strtoupper($item->size) }} @endif
+                                    <br> Qty: {{ $item->quantity }}
+                                </div>
                                 <div class="item-price">{{ str_replace('Rp ', 'Rp', number_format($item->price, 0, ',', '.')) }} each</div>
                             </div>
                             <div>
